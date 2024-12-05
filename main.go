@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	nuclei "github.com/projectdiscovery/nuclei/v3/lib"
@@ -42,7 +43,15 @@ func main() {
 	// Execute the engine with JSON output callback
 	err = ne.ExecuteWithCallback(func(event *output.ResultEvent) {
 		// Print the JSON output
-		fmt.Println("got results : ", event.Host, event.TemplateID, event.Type, event.Info)
+		// fmt.Println("got results : ", event.Host, event.TemplateID, event.Type, event.Info)
+
+		eventData, err := json.Marshal(event)
+		if err != nil {
+			fmt.Println("Error marshalling event:", err)
+			return
+		}
+		fmt.Println(string(eventData))
+
 	})
 	if err != nil {
 		panic(err)
