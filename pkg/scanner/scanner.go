@@ -102,7 +102,7 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer) error {
 
 	fmt.Println("Engine created")
 
-	defer ne.Close()
+	// defer ne.Close()
 
 	// Load targets and optionally probe non-http/https targets
 	ne.LoadTargets(in.Targets, false)
@@ -133,5 +133,6 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer) error {
 		log.Println("Error executing nuclei engine: ", err)
 	}
 
+	log.Println("Execution completed")
 	return nil
 }
