@@ -1,11 +1,10 @@
 package scanner
 
 import (
-	"context"
-	"fmt"
 	"log"
 
 	pb "github.com/aswin-kevin/nuclei-grpc/pkg/service"
+
 	nuclei "github.com/projectdiscovery/nuclei/v3/lib"
 	"github.com/projectdiscovery/nuclei/v3/pkg/output"
 )
@@ -82,30 +81,12 @@ func ToSliceSafe(i interface{}) []string {
 
 func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer) error {
 
-	ctx := context.Background()
-
-	// Create nuclei engine with options
-	ne, err := nuclei.NewThreadSafeNucleiEngineCtx(
-		ctx,
-		nuclei.WithTemplateFilters(nuclei.TemplateFilters{
-			Tags:    in.Tags,
-			Authors: in.Authors,
-			IDs:     in.Templates,
-		}), // Run critical severity templates only
-
-	)
-
-	if err != nil {
-		log.Println("Got error while creating nuclei engine :", err.Error())
-		return nil
-	}
-
-	fmt.Println("Engine created")
-
-	defer ne.Close()
-
 	// Load targets and optionally probe non-http/https targets
-	err = ne.ExecuteNucleiWithOpts(in.Targets)
+	err := GlobalNucleiEngine.ExecuteNucleiWithOpts(
+		in.Targets,
+		nuclei.WithTemplateFilters(nuclei.TemplateFilters{
+			Tags: in.Tags,
+		}))
 
 	// fmt.Println("Targets loaded")
 
@@ -131,6 +112,7 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer) error {
 
 	if err != nil {
 		log.Println("Error executing nuclei engine: ", err)
+		return nil
 	}
 
 	return nil
