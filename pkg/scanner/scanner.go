@@ -85,7 +85,7 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer) error {
 	ctx := context.Background()
 
 	// Create nuclei engine with options
-	ne, err := nuclei.NewNucleiEngineCtx(
+	ne, err := nuclei.NewThreadSafeNucleiEngineCtx(
 		ctx,
 		nuclei.WithTemplateFilters(nuclei.TemplateFilters{
 			Tags:    in.Tags,
@@ -105,29 +105,29 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer) error {
 	defer ne.Close()
 
 	// Load targets and optionally probe non-http/https targets
-	ne.LoadTargets(in.Targets, false)
+	err = ne.ExecuteNucleiWithOpts(in.Targets)
 
-	fmt.Println("Targets loaded")
+	// fmt.Println("Targets loaded")
 
 	// Execute the engine with JSON output callback
-	err = ne.ExecuteWithCallback(func(event *output.ResultEvent) {
+	// err = ne.ExecuteWithCallback(func(event *output.ResultEvent) {
 
-		log.Printf("\n\nGot Result: %v\n\n", event.TemplateID)
+	// 	log.Printf("\n\nGot Result: %v\n\n", event.TemplateID)
 
-		// data, _ := json.Marshal(event)
+	// data, _ := json.Marshal(event)
 
-		// fileName := fmt.Sprintf("%s.json", event.TemplateID)
-		// fileErr := os.WriteFile(fileName, data, 0644)
-		// if fileErr != nil {
-		// 	log.Printf("Error writing to file %s: %v", fileName, err)
-		// }
+	// fileName := fmt.Sprintf("%s.json", event.TemplateID)
+	// fileErr := os.WriteFile(fileName, data, 0644)
+	// if fileErr != nil {
+	// 	log.Printf("Error writing to file %s: %v", fileName, err)
+	// }
 
-		result := eventToScanResult(event)
-		err := stream.Send(result)
-		if err != nil {
-			log.Printf("Error sending %v result to client: %v", event.TemplateID, err)
-		}
-	})
+	// 	result := eventToScanResult(event)
+	// 	err := stream.Send(result)
+	// 	if err != nil {
+	// 		log.Printf("Error sending %v result to client: %v", event.TemplateID, err)
+	// 	}
+	// })
 
 	if err != nil {
 		log.Println("Error executing nuclei engine: ", err)
