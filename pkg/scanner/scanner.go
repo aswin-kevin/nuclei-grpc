@@ -3,13 +3,15 @@ package scanner
 import (
 	"log"
 
+	"github.com/aswin-kevin/nuclei-grpc/pkg/engine"
 	pb "github.com/aswin-kevin/nuclei-grpc/pkg/service"
 
 	nuclei "github.com/projectdiscovery/nuclei/v3/lib"
 	"github.com/projectdiscovery/nuclei/v3/pkg/output"
+	"github.com/projectdiscovery/nuclei/v3/pkg/testutils"
 )
 
-func eventToScanResult(event *output.ResultEvent) *pb.ScanResult {
+func EventToScanResult(event *output.ResultEvent) *pb.ScanResult {
 
 	var info *pb.ScanResultInfo
 	if event.Info.Classification != nil {
@@ -81,28 +83,37 @@ func ToSliceSafe(i interface{}) []string {
 
 func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer) error {
 
-	// Load targets and optionally probe non-http/https targets
-	err := GlobalNucleiEngine.ExecuteNucleiWithOpts(
+	// mockProgress := &testutils.MockProgressClient{}
+	// reportingClient, _ := reporting.New(&reporting.Options{}, "")
+	// defer reportingClient.Close()
+
+	outputWriter := testutils.NewMockOutputWriter(false)
+	outputWriter.WriteCallback = func(event *output.ResultEvent) {
+		log.Printf("Got Result: %v\n", event.TemplateID)
+		result := EventToScanResult(event)
+		err := stream.Send(result)
+		if err != nil {
+			log.Printf("Error sending %v result to client: %v", event.TemplateID, err)
+		}
+	}
+
+	// interactOpts := interactsh.DefaultOptions(outputWriter, reportingClient, mockProgress)
+
+	// nucleiInteractOpts := nuclei.InteractshOpts{}
+	// nucleiInteractOpts.Output = outputWriter
+
+	// Load targets and execute nuclei engine
+	err := engine.GlobalNucleiEngine.ExecuteNucleiWithOpts(
 		in.Targets,
 		nuclei.WithTemplateFilters(nuclei.TemplateFilters{
 			Tags: in.Tags,
-		}))
+		}),
+	)
 
-	// fmt.Println("Targets loaded")
+	log.Println("Targets loaded")
 
-	// Execute the engine with JSON output callback
-	// err = ne.ExecuteWithCallback(func(event *output.ResultEvent) {
-
+	// GlobalNucleiEngine.GlobalResultCallback(func(event *output.ResultEvent) {
 	// 	log.Printf("\n\nGot Result: %v\n\n", event.TemplateID)
-
-	// data, _ := json.Marshal(event)
-
-	// fileName := fmt.Sprintf("%s.json", event.TemplateID)
-	// fileErr := os.WriteFile(fileName, data, 0644)
-	// if fileErr != nil {
-	// 	log.Printf("Error writing to file %s: %v", fileName, err)
-	// }
-
 	// 	result := eventToScanResult(event)
 	// 	err := stream.Send(result)
 	// 	if err != nil {
