@@ -8,6 +8,7 @@ import (
 	"github.com/aswin-kevin/nuclei-grpc/pkg/logger"
 	"github.com/aswin-kevin/nuclei-grpc/pkg/server"
 	pb "github.com/aswin-kevin/nuclei-grpc/pkg/service"
+	"github.com/aswin-kevin/nuclei-grpc/pkg/utils"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -42,6 +43,7 @@ var startCmd = &cobra.Command{
 
 func init() {
 	logger.InitializeGlobalLogger()
+	utils.LoadAllNucleiTemplatesMetadata()
 	startCmd.Flags().StringVarP(&address, "address", "a", defaultAddress, "Address to listen on")
 	startCmd.Flags().StringVarP(&port, "port", "p", defaultPort, "Port to listen on")
 	rootCmd.AddCommand(startCmd)

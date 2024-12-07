@@ -86,15 +86,29 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer, scanLogger *zerolo
 
 	ctx := context.Background()
 
+	var templateIdsToScan = make([]string, 0)
+
+	// If templates ids are provided, use them
+	if len(in.TemplateIds) > 0 {
+		templateIdsToScan = in.TemplateIds
+	}
+
+	if len(in.Templates) > 0 {
+		userGivenTemplateIds := utils.GetTemplateIdsFromTemplateData(in.Templates)
+		templateIdsToScan = append(templateIdsToScan, userGivenTemplateIds...)
+	}
+
+	scanLogger.Info().Msg("Templates to scan : " + strconv.Itoa(len(templateIdsToScan)))
+
 	// Create nuclei engine with options
 	ne, err := nuclei.NewNucleiEngineCtx(
 		ctx,
 		nuclei.WithTemplateFilters(nuclei.TemplateFilters{
-			Tags:    in.Tags,
-			Authors: in.Authors,
-			IDs:     in.Templates,
+			Severity: in.Severity,
+			Tags:     in.Tags,
+			Authors:  in.Authors,
+			IDs:      templateIdsToScan,
 		}), // Run with custom template filters
-
 	)
 
 	if err != nil {
