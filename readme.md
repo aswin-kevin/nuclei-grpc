@@ -45,6 +45,8 @@ Replace `<custom_address>` with the desired address (e.g., `localhost`) and `<cu
 
 To make a request to the gRPC server, use the following payload:
 
+1. Filter using tags
+
 ```json
 {
   "targets": ["https://hotstar.com"],
@@ -52,9 +54,46 @@ To make a request to the gRPC server, use the following payload:
 }
 ```
 
+2. Filter using templates
+
+```json
+{
+  "targets": ["https://hotstar.com"],
+  "templates": ["http/cves", "network/cves"]
+}
+```
+
+3. Filter using templates relative paths
+
+```json
+{
+  "targets": ["https://hotstar.com"],
+  "templates": ["http/cves/xyz.yaml", "network/cves/new.yaml"]
+}
+```
+
+4. Filter using templates ids
+
+```json
+{
+  "targets": ["https://hotstar.com"],
+  "template_ids": ["detect-dangling-cname", "dnssec-detection"]
+}
+```
+
 ### Example Response
 
 The response is a server-side streaming response. Example JSON responses can be found in the `examples/jsons` directory.
+
+### Protofile
+
+Protofile is placed in `pkg/service/service.proto` , you this on your client side.
+
+If you want to rebuild the protofile use the following command
+
+```sh
+protoc --go_out=. --go-grpc_out=. service.proto
+```
 
 ## Contributing
 

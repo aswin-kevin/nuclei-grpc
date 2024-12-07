@@ -19,7 +19,7 @@ message ScanRequest {
   repeated string excluded_templates = 9;
   repeated string exclude_matchers = 10;
   repeated string custom_headers = 11;
-  repeated string severities = 12;
+  string severity = 12;
   repeated string exclude_severities = 13;
   repeated string authors = 14;
   repeated string protocols = 15;
@@ -30,6 +30,7 @@ message ScanRequest {
   repeated string exclude_ids = 20;
   bool headless = 21;
   bool new_templates = 22;
+  repeated string template_ids = 23;
 
   // Vars
   // RemoteTemplateDomainList: should probably be configured when starting the API
