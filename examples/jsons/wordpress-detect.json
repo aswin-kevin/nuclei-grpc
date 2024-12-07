@@ -1,6 +1,6 @@
 {
   "template-id": "wordpress-detect",
-  "template-path": "C:\\Users\\ASWIN\\nuclei-templates\\http\\technologies\\wordpress-detect.yaml",
+  "template-path": "C:\\Users\\KEVIN\\nuclei-templates\\http\\technologies\\wordpress-detect.yaml",
   "info": {
     "name": "WordPress Detect",
     "author": [

@@ -4,6 +4,8 @@ go 1.21.2
 
 require (
 	github.com/projectdiscovery/nuclei/v3 v3.3.7
+	github.com/rs/zerolog v1.33.0
+	github.com/spf13/cobra v1.6.0
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.34.2
 )
@@ -143,6 +145,7 @@ require (
 	github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf // indirect
 	github.com/hdm/jarm-go v0.0.7 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/invopop/jsonschema v0.12.0 // indirect
 	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/itchyny/gojq v0.12.13 // indirect
@@ -254,6 +257,7 @@ require (
 	github.com/skeema/knownhosts v1.2.1 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/tidwall/btree v1.7.0 // indirect
 	github.com/tidwall/buntdb v1.3.1 // indirect

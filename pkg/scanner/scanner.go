@@ -2,12 +2,13 @@ package scanner
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"strconv"
 
 	pb "github.com/aswin-kevin/nuclei-grpc/pkg/service"
+	"github.com/aswin-kevin/nuclei-grpc/pkg/utils"
 	nuclei "github.com/projectdiscovery/nuclei/v3/lib"
 	"github.com/projectdiscovery/nuclei/v3/pkg/output"
+	"github.com/rs/zerolog"
 )
 
 func eventToScanResult(event *output.ResultEvent) *pb.ScanResult {
@@ -80,7 +81,8 @@ func ToSliceSafe(i interface{}) []string {
 	return i.(interface{ ToSlice() []string }).ToSlice()
 }
 
-func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer) error {
+func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer, scanLogger *zerolog.Logger) error {
+	utils.IncreaseNucleiInstanceCount()
 
 	ctx := context.Background()
 
@@ -91,48 +93,51 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer) error {
 			Tags:    in.Tags,
 			Authors: in.Authors,
 			IDs:     in.Templates,
-		}), // Run critical severity templates only
+		}), // Run with custom template filters
 
 	)
 
 	if err != nil {
-		log.Println("Got error while creating nuclei engine :", err.Error())
+		scanLogger.Error().Err(err).Msg("Got error while creating nuclei engine")
 		return nil
 	}
 
-	fmt.Println("Engine created")
+	defer func() {
+		utils.DecreaseNucleiInstanceCount()
+		if utils.GetNucleiInstanceCount() == 0 {
+			ne.Close()
+			scanLogger.Info().Msg("All nuclei instances are closed")
+		} else {
+			scanLogger.Info().Msg("Nuclei instance is not closed due to other active scans " + strconv.Itoa(utils.GetNucleiInstanceCount()))
+		}
+	}()
+
+	scanLogger.Info().Msg("New nuclei engine instance created")
 
 	// defer ne.Close()
 
 	// Load targets and optionally probe non-http/https targets
 	ne.LoadTargets(in.Targets, false)
 
-	fmt.Println("Targets loaded")
+	scanLogger.Info().Msg("Targets are loaded into nuclei engine")
 
 	// Execute the engine with JSON output callback
 	err = ne.ExecuteWithCallback(func(event *output.ResultEvent) {
 
-		log.Printf("\n\nGot Result: %v\n\n", event.TemplateID)
-
-		// data, _ := json.Marshal(event)
-
-		// fileName := fmt.Sprintf("%s.json", event.TemplateID)
-		// fileErr := os.WriteFile(fileName, data, 0644)
-		// if fileErr != nil {
-		// 	log.Printf("Error writing to file %s: %v", fileName, err)
-		// }
+		scanLogger.Info().Msg("FOUND : " + event.TemplateID)
 
 		result := eventToScanResult(event)
 		err := stream.Send(result)
 		if err != nil {
-			log.Printf("Error sending %v result to client: %v", event.TemplateID, err)
+			scanLogger.Error().Err(err).Msg("Error sending result to client :" + event.TemplateID)
 		}
 	})
 
 	if err != nil {
-		log.Println("Error executing nuclei engine: ", err)
+		scanLogger.Error().Err(err).Msg("Error executing nuclei engine")
+		return nil
 	}
 
-	log.Println("Execution completed")
+	scanLogger.Info().Msg("Nuclei engine scan completed")
 	return nil
 }

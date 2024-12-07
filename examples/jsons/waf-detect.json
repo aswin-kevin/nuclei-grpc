@@ -1,6 +1,6 @@
 {
   "template-id": "waf-detect",
-  "template-path": "C:\\Users\\ASWIN\\nuclei-templates\\http\\technologies\\waf-detect.yaml",
+  "template-path": "C:\\Users\\KEVIN\\nuclei-templates\\http\\technologies\\waf-detect.yaml",
   "info": {
     "name": "WAF Detection",
     "author": ["dwisiswant0", "lu4nx"],

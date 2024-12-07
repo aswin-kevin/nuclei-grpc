@@ -1,69 +1,62 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"net"
 
+	"github.com/aswin-kevin/nuclei-grpc/pkg/logger"
 	"github.com/aswin-kevin/nuclei-grpc/pkg/server"
 	pb "github.com/aswin-kevin/nuclei-grpc/pkg/service"
 
-	nuclei "github.com/projectdiscovery/nuclei/v3/lib"
-	"github.com/projectdiscovery/nuclei/v3/pkg/output"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+
+	"os"
+
+	"github.com/spf13/cobra"
 )
 
 const listenAddress = "localhost:8555"
 
-func main1() {
-	ctx := context.Background()
+var rootCmd = &cobra.Command{
+	Use:   "nuclei-grpc",
+	Short: "Nuclei gRPC server",
+}
 
-	// Create nuclei engine with options
-	ne, err := nuclei.NewNucleiEngineCtx(
-		ctx,
-		nuclei.WithTemplateFilters(nuclei.TemplateFilters{
-			Tags: []string{"tech"},
-		}), // Run critical severity templates only
-	)
+var startCmd = &cobra.Command{
+	Use:   "start",
+	Short: "Start the gRPC server",
+	Run: func(cmd *cobra.Command, args []string) {
+		startServer()
+	},
+}
 
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Engine created")
-
-	defer ne.Close()
-
-	// Load targets and optionally probe non-http/https targets
-	ne.LoadTargets([]string{"https://securin.io"}, false)
-
-	fmt.Println("Targets loaded")
-
-	// Execute the engine with JSON output callback
-	err = ne.ExecuteWithCallback(func(event *output.ResultEvent) {
-		// Print the JSON output
-		fmt.Println("got results : ", event.Host, event.TemplateID, event.Type, event.Info)
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Execution completed")
+func init() {
+	logger.InitializeGlobalLogger()
+	rootCmd.AddCommand(startCmd)
 }
 
 func main() {
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatalf("Error executing command: %v", err)
+		os.Exit(1)
+	}
+}
+
+func startServer() {
 	listener, err := net.Listen("tcp", listenAddress)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.GlobalLogger.Fatal().Err(err).Msg("Failed to listen -> Closing server")
 	}
-	log.Println("Started nuclei-api server on:", listenAddress)
+	logger.GlobalLogger.Info().Msg("Started nuclei-api server on: " + listenAddress)
 
 	s := grpc.NewServer()
 	pb.RegisterNucleiApiServer(s, &server.Server{})
+
+	// it gives server metadata to client
 	reflection.Register(s)
+
 	if err := s.Serve(listener); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		logger.GlobalLogger.Fatal().Err(err).Msg("Failed to serve -> Closing server")
 	}
 }
