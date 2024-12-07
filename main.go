@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 
@@ -16,7 +17,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const listenAddress = "localhost:8555"
+var (
+	address string
+	port    string
+)
+
+const (
+	defaultAddress = "localhost"
+	defaultPort    = "8555"
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "nuclei-grpc",
@@ -33,6 +42,8 @@ var startCmd = &cobra.Command{
 
 func init() {
 	logger.InitializeGlobalLogger()
+	startCmd.Flags().StringVarP(&address, "address", "a", defaultAddress, "Address to listen on")
+	startCmd.Flags().StringVarP(&port, "port", "p", defaultPort, "Port to listen on")
 	rootCmd.AddCommand(startCmd)
 }
 
@@ -44,6 +55,7 @@ func main() {
 }
 
 func startServer() {
+	listenAddress := fmt.Sprintf("%s:%s", address, port)
 	listener, err := net.Listen("tcp", listenAddress)
 	if err != nil {
 		logger.GlobalLogger.Fatal().Err(err).Msg("Failed to listen -> Closing server")
