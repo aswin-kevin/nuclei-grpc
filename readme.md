@@ -1,6 +1,6 @@
 # Nuclei gRPC Application
 
-This application serves nuclei engine as GRPC service.
+This application serves nuclei engine as GRPC service. It uses nuclei engine V3.
 
 ## Prerequisites
 
