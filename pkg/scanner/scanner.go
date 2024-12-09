@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	pb "github.com/aswin-kevin/nuclei-grpc/pkg/service"
@@ -83,10 +84,57 @@ func ToSliceSafe(i interface{}) []string {
 
 func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer, scanLogger *zerolog.Logger) error {
 	utils.IncreaseNucleiInstanceCount()
-
 	ctx := context.Background()
 
+	var nucleiScanStrategy = "template-spray"
 	var templateIdsToScan = make([]string, 0)
+
+	var nucleiConcurrencyConfig = nuclei.Concurrency{
+		TemplateConcurrency:           10, // number of templates to run concurrently (per host in host-spray mode)
+		HostConcurrency:               5,  // number of hosts to scan concurrently (per template in template-spray mode)
+		HeadlessHostConcurrency:       3,  // number of hosts to scan concurrently for headless templates (per template in template-spray mode)
+		HeadlessTemplateConcurrency:   2,  // number of templates to run concurrently for headless templates (per host in host-spray mode)
+		JavascriptTemplateConcurrency: 4,  // number of templates to run concurrently for javascript templates (per host in host-spray mode)
+		TemplatePayloadConcurrency:    25, // max concurrent payloads to run for a template
+		ProbeConcurrency:              50, // max concurrent HTTP probes to run
+	}
+
+	fmt.Println("scan strategy : ", in.ScanStrategy)
+	if in.ScanStrategy != "" {
+		nucleiScanStrategy = in.ScanStrategy
+	}
+
+	// fmt.Println("scan concurrency config : ", in.ScanConcurrencyConfig.GetTemplateConcurrency())
+	// if in.ScanConcurrencyConfig.TemplateConcurrency > 0 {
+	// 	nucleiConcurrencyConfig.TemplateConcurrency = int(in.ScanConcurrencyConfig.TemplateConcurrency)
+	// }
+
+	// if in.ScanConcurrencyConfig.HostConcurrency > 0 {
+	// 	nucleiConcurrencyConfig.HostConcurrency = int(in.ScanConcurrencyConfig.HostConcurrency)
+	// }
+
+	// if in.ScanConcurrencyConfig.HeadlessHostConcurrency > 0 {
+	// 	nucleiConcurrencyConfig.HeadlessHostConcurrency = int(in.ScanConcurrencyConfig.HeadlessHostConcurrency)
+	// }
+
+	// if in.ScanConcurrencyConfig.HeadlessTemplateConcurrency > 0 {
+	// 	nucleiConcurrencyConfig.HeadlessTemplateConcurrency = int(in.ScanConcurrencyConfig.HeadlessTemplateConcurrency)
+	// }
+
+	// if in.ScanConcurrencyConfig.JavascriptTemplateConcurrency > 0 {
+	// 	nucleiConcurrencyConfig.JavascriptTemplateConcurrency = int(in.ScanConcurrencyConfig.JavascriptTemplateConcurrency)
+	// }
+
+	// if in.ScanConcurrencyConfig.TemplatePayloadConcurrency > 0 {
+	// 	nucleiConcurrencyConfig.TemplatePayloadConcurrency = int(in.ScanConcurrencyConfig.TemplatePayloadConcurrency)
+	// }
+
+	// if in.ScanConcurrencyConfig.ProbeConcurrency > 0 {
+	// 	nucleiConcurrencyConfig.ProbeConcurrency = int(in.ScanConcurrencyConfig.ProbeConcurrency)
+	// }
+
+	// scanLogger.Info().Msg("Scan strategy : " + nucleiScanStrategy)
+	// scanLogger.Info().Msg("Concurrency config : " + string(nucleiConcurrencyConfig.HostConcurrency))
 
 	// If templates ids are provided, use them
 	if len(in.TemplateIds) > 0 {
@@ -109,6 +157,8 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer, scanLogger *zerolo
 			Authors:  in.Authors,
 			IDs:      templateIdsToScan,
 		}), // Run with custom template filters
+		nuclei.WithConcurrency(nucleiConcurrencyConfig), // Set concurrency
+		nuclei.WithScanStrategy(nucleiScanStrategy),     // Set scan strategy
 	)
 
 	if err != nil {
