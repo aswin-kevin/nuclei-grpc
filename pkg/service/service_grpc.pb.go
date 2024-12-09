@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.21.12
-// source: service.proto
+// source: pkg/service/service.proto
 
 package service
 
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	NucleiApi_Scan_FullMethodName = "/NucleiApi/Scan"
+	NucleiApi_Scan_FullMethodName = "/service.NucleiApi/Scan"
 )
 
 // NucleiApiClient is the client API for NucleiApi service.
@@ -122,7 +122,7 @@ func (x *nucleiApiScanServer) Send(m *ScanResult) error {
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var NucleiApi_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "NucleiApi",
+	ServiceName: "service.NucleiApi",
 	HandlerType: (*NucleiApiServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
@@ -132,5 +132,5 @@ var NucleiApi_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "service.proto",
+	Metadata: "pkg/service/service.proto",
 }

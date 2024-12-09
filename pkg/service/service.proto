@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-option go_package = "github.com/aswin-kevin/nuclei-grpc/pkg/service";
+package service;
+
+option go_package = "./pkg/service";
 
 service NucleiApi {
   rpc Scan (ScanRequest) returns (stream ScanResult) {}
