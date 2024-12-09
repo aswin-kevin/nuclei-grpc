@@ -2,7 +2,6 @@ package scanner
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	pb "github.com/aswin-kevin/nuclei-grpc/pkg/service"
@@ -99,42 +98,37 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer, scanLogger *zerolo
 		ProbeConcurrency:              50, // max concurrent HTTP probes to run
 	}
 
-	fmt.Println("scan strategy : ", in.ScanStrategy)
 	if in.ScanStrategy != "" {
 		nucleiScanStrategy = in.ScanStrategy
 	}
 
-	// fmt.Println("scan concurrency config : ", in.ScanConcurrencyConfig.GetTemplateConcurrency())
-	// if in.ScanConcurrencyConfig.TemplateConcurrency > 0 {
-	// 	nucleiConcurrencyConfig.TemplateConcurrency = int(in.ScanConcurrencyConfig.TemplateConcurrency)
-	// }
+	if in.ScanConcurrencyConfig.TemplateConcurrency > 0 {
+		nucleiConcurrencyConfig.TemplateConcurrency = int(in.ScanConcurrencyConfig.TemplateConcurrency)
+	}
 
-	// if in.ScanConcurrencyConfig.HostConcurrency > 0 {
-	// 	nucleiConcurrencyConfig.HostConcurrency = int(in.ScanConcurrencyConfig.HostConcurrency)
-	// }
+	if in.ScanConcurrencyConfig.HostConcurrency > 0 {
+		nucleiConcurrencyConfig.HostConcurrency = int(in.ScanConcurrencyConfig.HostConcurrency)
+	}
 
-	// if in.ScanConcurrencyConfig.HeadlessHostConcurrency > 0 {
-	// 	nucleiConcurrencyConfig.HeadlessHostConcurrency = int(in.ScanConcurrencyConfig.HeadlessHostConcurrency)
-	// }
+	if in.ScanConcurrencyConfig.HeadlessHostConcurrency > 0 {
+		nucleiConcurrencyConfig.HeadlessHostConcurrency = int(in.ScanConcurrencyConfig.HeadlessHostConcurrency)
+	}
 
-	// if in.ScanConcurrencyConfig.HeadlessTemplateConcurrency > 0 {
-	// 	nucleiConcurrencyConfig.HeadlessTemplateConcurrency = int(in.ScanConcurrencyConfig.HeadlessTemplateConcurrency)
-	// }
+	if in.ScanConcurrencyConfig.HeadlessTemplateConcurrency > 0 {
+		nucleiConcurrencyConfig.HeadlessTemplateConcurrency = int(in.ScanConcurrencyConfig.HeadlessTemplateConcurrency)
+	}
 
-	// if in.ScanConcurrencyConfig.JavascriptTemplateConcurrency > 0 {
-	// 	nucleiConcurrencyConfig.JavascriptTemplateConcurrency = int(in.ScanConcurrencyConfig.JavascriptTemplateConcurrency)
-	// }
+	if in.ScanConcurrencyConfig.JavascriptTemplateConcurrency > 0 {
+		nucleiConcurrencyConfig.JavascriptTemplateConcurrency = int(in.ScanConcurrencyConfig.JavascriptTemplateConcurrency)
+	}
 
-	// if in.ScanConcurrencyConfig.TemplatePayloadConcurrency > 0 {
-	// 	nucleiConcurrencyConfig.TemplatePayloadConcurrency = int(in.ScanConcurrencyConfig.TemplatePayloadConcurrency)
-	// }
+	if in.ScanConcurrencyConfig.TemplatePayloadConcurrency > 0 {
+		nucleiConcurrencyConfig.TemplatePayloadConcurrency = int(in.ScanConcurrencyConfig.TemplatePayloadConcurrency)
+	}
 
-	// if in.ScanConcurrencyConfig.ProbeConcurrency > 0 {
-	// 	nucleiConcurrencyConfig.ProbeConcurrency = int(in.ScanConcurrencyConfig.ProbeConcurrency)
-	// }
-
-	// scanLogger.Info().Msg("Scan strategy : " + nucleiScanStrategy)
-	// scanLogger.Info().Msg("Concurrency config : " + string(nucleiConcurrencyConfig.HostConcurrency))
+	if in.ScanConcurrencyConfig.ProbeConcurrency > 0 {
+		nucleiConcurrencyConfig.ProbeConcurrency = int(in.ScanConcurrencyConfig.ProbeConcurrency)
+	}
 
 	// If templates ids are provided, use them
 	if len(in.TemplateIds) > 0 {
