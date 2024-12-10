@@ -81,6 +81,34 @@ To make a request to the gRPC server, use the following payload:
 }
 ```
 
+5. Add concurrency configuration and scan strategy
+
+```json
+{
+  "targets": ["https://hotstar.com"],
+  "template_ids": ["caa-fingerprint"],
+  "scan_strategy": "host-spray",
+  "scan_concurrency_config": {
+    "template_concurrency": 5,
+    "host_concurrency": 9,
+    "headless_host_concurrency": 109,
+    "headless_template_concurrency": 178,
+    "javascript_template_concurrency": 7,
+    "template_payload_concurrency": 100,
+    "probe_concurrency": 89
+  }
+}
+```
+
+6. Filter using severity
+
+```json
+{
+  "targets": ["https://hotstar.com"],
+  "severity": "low"
+}
+```
+
 ### Example Response
 
 The response is a server-side streaming response. Example JSON responses can be found in the `examples/jsons` directory.
@@ -92,7 +120,7 @@ Protofile is placed in `pkg/service/service.proto` , you this on your client sid
 If you want to rebuild the protofile use the following command
 
 ```sh
-protoc --go_out=. --go-grpc_out=. service.proto
+protoc --go_out=. --go-grpc_out=. ./pkg/service/service.proto
 ```
 
 ## Contributing

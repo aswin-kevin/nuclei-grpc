@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-option go_package = "github.com/aswin-kevin/nuclei-grpc/pkg/service";
+package service;
+
+option go_package = "./pkg/service";
 
 service NucleiApi {
   rpc Scan (ScanRequest) returns (stream ScanResult) {}
@@ -31,12 +33,23 @@ message ScanRequest {
   bool headless = 21;
   bool new_templates = 22;
   repeated string template_ids = 23;
+  string scan_strategy = 24;
 
+  ConcurrencyConfig scan_concurrency_config = 25;
   // Vars
   // RemoteTemplateDomainList: should probably be configured when starting the API
 
 }
 
+message ConcurrencyConfig {
+  int32 template_concurrency = 1;
+  int32 host_concurrency = 2;
+  int32 headless_host_concurrency = 3;
+  int32 headless_template_concurrency = 4;
+  int32 javascript_template_concurrency = 5;
+  int32 template_payload_concurrency = 6;
+  int32 probe_concurrency = 7;
+}
 
 message ScanResponse {
   string id = 1;
