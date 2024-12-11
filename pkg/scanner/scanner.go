@@ -102,32 +102,35 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer, scanLogger *zerolo
 		nucleiScanStrategy = in.ScanStrategy
 	}
 
-	if in.ScanConcurrencyConfig.TemplateConcurrency > 0 {
-		nucleiConcurrencyConfig.TemplateConcurrency = int(in.ScanConcurrencyConfig.TemplateConcurrency)
-	}
+	if in.ScanConcurrencyConfig != nil {
+		if in.ScanConcurrencyConfig.TemplateConcurrency > 0 {
+			nucleiConcurrencyConfig.TemplateConcurrency = int(in.ScanConcurrencyConfig.TemplateConcurrency)
+		}
 
-	if in.ScanConcurrencyConfig.HostConcurrency > 0 {
-		nucleiConcurrencyConfig.HostConcurrency = int(in.ScanConcurrencyConfig.HostConcurrency)
-	}
+		if in.ScanConcurrencyConfig.HostConcurrency > 0 {
+			nucleiConcurrencyConfig.HostConcurrency = int(in.ScanConcurrencyConfig.HostConcurrency)
+		}
 
-	if in.ScanConcurrencyConfig.HeadlessHostConcurrency > 0 {
-		nucleiConcurrencyConfig.HeadlessHostConcurrency = int(in.ScanConcurrencyConfig.HeadlessHostConcurrency)
-	}
+		if in.ScanConcurrencyConfig.HeadlessHostConcurrency > 0 {
+			nucleiConcurrencyConfig.HeadlessHostConcurrency = int(in.ScanConcurrencyConfig.HeadlessHostConcurrency)
+		}
 
-	if in.ScanConcurrencyConfig.HeadlessTemplateConcurrency > 0 {
-		nucleiConcurrencyConfig.HeadlessTemplateConcurrency = int(in.ScanConcurrencyConfig.HeadlessTemplateConcurrency)
-	}
+		if in.ScanConcurrencyConfig.HeadlessTemplateConcurrency > 0 {
+			nucleiConcurrencyConfig.HeadlessTemplateConcurrency = int(in.ScanConcurrencyConfig.HeadlessTemplateConcurrency)
+		}
 
-	if in.ScanConcurrencyConfig.JavascriptTemplateConcurrency > 0 {
-		nucleiConcurrencyConfig.JavascriptTemplateConcurrency = int(in.ScanConcurrencyConfig.JavascriptTemplateConcurrency)
-	}
+		if in.ScanConcurrencyConfig.JavascriptTemplateConcurrency > 0 {
+			nucleiConcurrencyConfig.JavascriptTemplateConcurrency = int(in.ScanConcurrencyConfig.JavascriptTemplateConcurrency)
+		}
 
-	if in.ScanConcurrencyConfig.TemplatePayloadConcurrency > 0 {
-		nucleiConcurrencyConfig.TemplatePayloadConcurrency = int(in.ScanConcurrencyConfig.TemplatePayloadConcurrency)
-	}
+		if in.ScanConcurrencyConfig.TemplatePayloadConcurrency > 0 {
+			nucleiConcurrencyConfig.TemplatePayloadConcurrency = int(in.ScanConcurrencyConfig.TemplatePayloadConcurrency)
+		}
 
-	if in.ScanConcurrencyConfig.ProbeConcurrency > 0 {
-		nucleiConcurrencyConfig.ProbeConcurrency = int(in.ScanConcurrencyConfig.ProbeConcurrency)
+		if in.ScanConcurrencyConfig.ProbeConcurrency > 0 {
+			nucleiConcurrencyConfig.ProbeConcurrency = int(in.ScanConcurrencyConfig.ProbeConcurrency)
+		}
+
 	}
 
 	// If templates ids are provided, use them
