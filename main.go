@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 
 	"github.com/aswin-kevin/nuclei-grpc/pkg/logger"
 	"github.com/aswin-kevin/nuclei-grpc/pkg/server"
@@ -19,13 +20,15 @@ import (
 )
 
 var (
-	address string
-	port    string
+	address         string
+	port            string
+	healthCheckPort string
 )
 
 const (
-	defaultAddress = "localhost"
-	defaultPort    = "8555"
+	defaultAddress         = "localhost"
+	defaultPort            = "8555"
+	defaultHealthCheckPort = "8556"
 )
 
 var rootCmd = &cobra.Command{
@@ -37,6 +40,7 @@ var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the gRPC server",
 	Run: func(cmd *cobra.Command, args []string) {
+		startHealthCheckServer()
 		startServer()
 	},
 }
@@ -46,6 +50,7 @@ func init() {
 	utils.LoadAllNucleiTemplatesMetadata()
 	startCmd.Flags().StringVarP(&address, "address", "a", defaultAddress, "Address to listen on")
 	startCmd.Flags().StringVarP(&port, "port", "p", defaultPort, "Port to listen on")
+	startCmd.Flags().StringVarP(&healthCheckPort, "hport", "r", defaultHealthCheckPort, "REST API Port to listen on - health check")
 	rootCmd.AddCommand(startCmd)
 }
 
@@ -73,4 +78,19 @@ func startServer() {
 	if err := s.Serve(listener); err != nil {
 		logger.GlobalLogger.Fatal().Err(err).Msg("Failed to serve -> Closing server")
 	}
+}
+
+func startHealthCheckServer() {
+	restAPIListenAddress := fmt.Sprintf("%s:%s", address, defaultHealthCheckPort)
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("I AM HEALTHY"))
+	})
+
+	go func() {
+		logger.GlobalLogger.Info().Msg("Started REST API health check server on : " + restAPIListenAddress)
+		if err := http.ListenAndServe(fmt.Sprintf(":%s", defaultHealthCheckPort), nil); err != nil {
+			logger.GlobalLogger.Fatal().Err(err).Msg("Failed to start REST API health check server")
+		}
+	}()
 }
