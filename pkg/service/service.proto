@@ -75,7 +75,11 @@ message ScanResult {
   Interaction interaction = 15;
   string curl_command = 16;
   bool matcher_status = 17;
-  // metadata
+  // added new fields
+  string url = 18;
+  string scheme = 19;
+  string port = 20;
+  string template_path = 21;
 }
 
 // https://github.com/projectdiscovery/nuclei/blob/main/v2/pkg/model/model.go#L9

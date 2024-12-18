@@ -71,6 +71,10 @@ func eventToScanResult(event *output.ResultEvent) *pb.ScanResult {
 		CurlCommand:      event.CURLCommand,
 		MatcherStatus:    event.MatcherStatus,
 		Interaction:      interaction,
+		Url:              event.URL,
+		Scheme:           event.Scheme,
+		Port:             event.Port,
+		TemplatePath:     event.TemplatePath,
 	}
 }
 
