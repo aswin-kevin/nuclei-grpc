@@ -3,6 +3,7 @@ package scanner
 import (
 	"context"
 	"strconv"
+	"time"
 
 	pb "github.com/aswin-kevin/nuclei-grpc/pkg/service"
 	"github.com/aswin-kevin/nuclei-grpc/pkg/utils"
@@ -10,6 +11,11 @@ import (
 	"github.com/projectdiscovery/nuclei/v3/pkg/output"
 	"github.com/rs/zerolog"
 )
+
+type RateLimit struct {
+	MaxTokens int
+	Duration  time.Duration
+}
 
 func eventToScanResult(event *output.ResultEvent) *pb.ScanResult {
 
@@ -102,6 +108,38 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer, scanLogger *zerolo
 		ProbeConcurrency:              50, // max concurrent HTTP probes to run
 	}
 
+	currentRateLimit := RateLimit{
+		MaxTokens: 150,         // default tokens per second
+		Duration:  time.Second, // default duration
+	}
+
+	// Override rate limit if provided
+	if in.RateLimit != nil {
+		if in.RateLimit.MaxTokens > 0 {
+			currentRateLimit.MaxTokens = int(in.RateLimit.MaxTokens)
+		}
+		if in.RateLimit.DurationMs > 0 {
+			currentRateLimit.Duration = time.Duration(in.RateLimit.DurationMs) * time.Millisecond
+		}
+	}
+
+	var nucleiNetworkConfig = nuclei.NetworkConfig{
+		MaxHostError:      10,    // Maximum number of host errors to allow before skipping that host
+		Retries:           1,     // Number of retries
+		Timeout:           10,    // Timeout in seconds
+		DisableMaxHostErr: false, // Disable max host error optimization (Hosts are not skipped even if they are not responding)
+	}
+
+	if in.ScanNetworkConfig != nil {
+		if in.ScanNetworkConfig.MaxHostError > 0 {
+			nucleiNetworkConfig.MaxHostError = int(in.ScanNetworkConfig.MaxHostError)
+		}
+		if in.ScanNetworkConfig.Retries > 0 {
+			nucleiNetworkConfig.Retries = int(in.ScanNetworkConfig.Retries)
+		}
+		nucleiNetworkConfig.DisableMaxHostErr = bool(in.ScanNetworkConfig.DisableMaxHostErr)
+	}
+
 	if in.ScanStrategy != "" {
 		nucleiScanStrategy = in.ScanStrategy
 	}
@@ -160,6 +198,12 @@ func Scan(in *pb.ScanRequest, stream pb.NucleiApi_ScanServer, scanLogger *zerolo
 		}), // Run with custom template filters
 		nuclei.WithConcurrency(nucleiConcurrencyConfig), // Set concurrency
 		nuclei.WithScanStrategy(nucleiScanStrategy),     // Set scan strategy
+		nuclei.WithNetworkConfig(nucleiNetworkConfig),   //
+		nuclei.WithGlobalRateLimitCtx( // Set rate limit
+			ctx,
+			currentRateLimit.MaxTokens,
+			currentRateLimit.Duration,
+		),
 	)
 
 	if err != nil {
